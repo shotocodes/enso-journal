@@ -261,10 +261,18 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
         </div>
 
         {(!today || today.manualEntries.length === 0) ? (
-          <div className="border-2 border-dashed border-card rounded-2xl p-6 text-center">
+          <div className="border-2 border-dashed border-card rounded-2xl p-6 text-center space-y-3">
             <FileTextIcon size={28} className="mx-auto text-muted opacity-40 mb-2" />
             <p className="text-sm text-muted">{t("today.noActivity", locale)}</p>
-            <p className="text-xs text-muted mt-1 opacity-50">{t("today.noActivityHint", locale)}</p>
+            <p className="text-xs text-muted opacity-50">{t("today.noActivityHint", locale)}</p>
+            <div className="flex flex-col gap-2 pt-1">
+              <a href="https://ensolife.app/focus" className="inline-block px-4 py-2 rounded-xl text-xs font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-colors">
+                {t("today.openFocus", locale)}
+              </a>
+              <a href="https://ensolife.app/task" className="inline-block px-4 py-2 rounded-xl text-xs font-medium bg-subtle text-muted hover:text-emerald-500 transition-colors">
+                {t("today.openTask", locale)}
+              </a>
+            </div>
           </div>
         ) : (
           <div className="space-y-2">

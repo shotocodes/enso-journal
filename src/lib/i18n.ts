@@ -32,6 +32,8 @@ const translations: Translations = {
   "today.addEntry":        { ja: "+ 追加", en: "+ Add", zh: "+ 添加", ko: "+ 추가" },
   "today.noActivity":      { ja: "まだ記録がありません", en: "No entries yet", zh: "暂无记录", ko: "기록이 없습니다" },
   "today.noActivityHint":  { ja: "「+ 追加」で今日の行動を記録しましょう", en: "Tap \"+ Add\" to log your activities", zh: "点击\"+ 添加\"记录今天的活动", ko: "\"+ 추가\"를 눌러 오늘의 활동을 기록하세요" },
+  "today.openFocus":       { ja: "ENSO FOCUSで集中を始める →", en: "Start focusing with ENSO FOCUS →", zh: "用ENSO FOCUS开始集中 →", ko: "ENSO FOCUS로 집중 시작 →" },
+  "today.openTask":        { ja: "ENSO TASKでタスクを追加 →", en: "Add tasks with ENSO TASK →", zh: "用ENSO TASK添加任务 →", ko: "ENSO TASK로 작업 추가 →" },
   "today.comment":         { ja: "ひとこと", en: "Quick Note", zh: "一句话", ko: "한마디" },
   "today.comment.morning": { ja: "今日の目標は？", en: "What's your goal today?", zh: "今天的目标是什么？", ko: "오늘의 목표는?" },
   "today.comment.afternoon": { ja: "午前中はどうでした？", en: "How was your morning?", zh: "上午怎么样？", ko: "오전은 어땠나요?" },

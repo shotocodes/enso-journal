@@ -143,16 +143,13 @@ export default function SettingsTab({
       {/* 削除確認モーダル */}
       {showClearConfirm && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center animate-fade-in"
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setShowClearConfirm(false)}
         >
           <div
-            className="w-full sm:max-w-sm bg-modal rounded-t-3xl sm:rounded-2xl p-6 animate-celebrate space-y-4"
+            className="w-full max-w-sm bg-modal rounded-2xl p-6 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-center sm:hidden">
-              <div className="w-10 h-1 rounded-full bg-subtle" />
-            </div>
             <p className="text-sm text-center">{t("settings.clearConfirm", locale)}</p>
             <div className="flex gap-3">
               <button

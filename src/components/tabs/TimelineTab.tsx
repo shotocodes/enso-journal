@@ -2,11 +2,20 @@
 
 import { useState, useMemo } from "react";
 import { type Locale, t, tFormat } from "@/lib/i18n";
-import type { DailyJournal } from "@/types";
-import { ENTRY_ICONS } from "@/types";
-import { MoodFace1, MoodFace2, MoodFace3, MoodFace4, MoodFace5 } from "@/components/Icons";
+import type { DailyJournal, EntryIcon } from "@/types";
+import {
+  MoodFace1, MoodFace2, MoodFace3, MoodFace4, MoodFace5,
+  TargetIcon, CheckCircleIcon, FileTextIcon, LightbulbIcon, CalendarIcon,
+} from "@/components/Icons";
 
 const MOOD_FACES = [MoodFace1, MoodFace2, MoodFace3, MoodFace4, MoodFace5] as const;
+
+const ICON_COMPONENTS: Record<EntryIcon, React.FC<{ size?: number; className?: string }>> = {
+  focus: TargetIcon, done: CheckCircleIcon, memo: FileTextIcon, idea: LightbulbIcon,
+};
+const ICON_COLORS: Record<EntryIcon, string> = {
+  focus: "text-blue-400", done: "text-emerald-500", memo: "text-amber-400", idea: "text-purple-400",
+};
 
 interface TimelineTabProps {
   locale: Locale;
@@ -23,18 +32,28 @@ export default function TimelineTab({ locale, entries }: TimelineTabProps) {
   const [moodFilter, setMoodFilter] = useState<number | null>(null);
   const [searchText, setSearchText] = useState("");
   const [expandedDate, setExpandedDate] = useState<string | null>(null);
+  const [dateFilter, setDateFilter] = useState("");  // "YYYY-MM-DD" for date picker
 
   // フィルター適用
   const filtered = useMemo(() => {
     let result = [...entries].sort((a, b) => b.date.localeCompare(a.date));
 
+    // 日付フィルター
+    if (dateFilter) {
+      result = result.filter((e) => e.date === dateFilter);
+    }
+
+    // 気分フィルター
     if (moodFilter) {
       result = result.filter((e) => e.mood === moodFilter);
     }
 
+    // テキスト検索（日付・AI要約・メモ・アクティビティ内容すべて対象）
     if (searchText.trim()) {
       const q = searchText.toLowerCase();
       result = result.filter((e) =>
+        e.date.includes(q) ||
+        formatDateShort(e.date, locale).toLowerCase().includes(q) ||
         (e.aiSummary ?? "").toLowerCase().includes(q) ||
         (e.notes ?? []).some((n) => n.toLowerCase().includes(q)) ||
         e.manualEntries.some((m) => m.text.toLowerCase().includes(q))
@@ -42,7 +61,7 @@ export default function TimelineTab({ locale, entries }: TimelineTabProps) {
     }
 
     return result;
-  }, [entries, moodFilter, searchText]);
+  }, [entries, moodFilter, searchText, dateFilter, locale]);
 
   return (
     <div className="animate-tab-enter space-y-5">
@@ -54,12 +73,12 @@ export default function TimelineTab({ locale, entries }: TimelineTabProps) {
       {/* フィルター */}
       {entries.length > 0 && (
         <div className="space-y-3">
-          {/* 気分フィルター */}
+          {/* 気分フィルター + 日付ピッカー */}
           <div className="flex gap-2 items-center">
             <button
-              onClick={() => setMoodFilter(null)}
+              onClick={() => { setMoodFilter(null); setDateFilter(""); }}
               className={`px-3 py-1 rounded-full text-xs transition-colors ${
-                moodFilter === null ? "bg-emerald-500 text-white" : "bg-subtle text-muted hover:opacity-80"
+                moodFilter === null && !dateFilter ? "bg-emerald-500 text-white" : "bg-subtle text-muted hover:opacity-80"
               }`}
             >
               {t("timeline.all", locale)}
@@ -80,7 +99,33 @@ export default function TimelineTab({ locale, entries }: TimelineTabProps) {
                 />
               </button>
             ))}
+            {/* 日付ピッカー */}
+            <div className="ml-auto relative">
+              <input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full"
+              />
+              <CalendarIcon
+                size={20}
+                className={`cursor-pointer transition-colors ${dateFilter ? "text-emerald-500" : "text-muted hover:text-emerald-500"}`}
+              />
+            </div>
           </div>
+
+          {/* 日付フィルター表示 */}
+          {dateFilter && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-emerald-500">{formatDateShort(dateFilter, locale)}</span>
+              <button
+                onClick={() => setDateFilter("")}
+                className="text-xs text-muted hover:text-red-400 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+          )}
 
           {/* テキスト検索 */}
           <input
@@ -97,7 +142,7 @@ export default function TimelineTab({ locale, entries }: TimelineTabProps) {
       {/* エントリー一覧 */}
       {filtered.length === 0 ? (
         <div className="border-2 border-dashed border-card rounded-2xl p-8 text-center">
-          <p className="text-4xl mb-3">📔</p>
+          <FileTextIcon size={32} className="mx-auto text-muted opacity-40 mb-3" />
           <p className="text-sm text-muted">{t("timeline.empty", locale)}</p>
           <p className="text-xs text-muted mt-1 opacity-50">{t("timeline.emptyHint", locale)}</p>
         </div>
@@ -142,20 +187,21 @@ export default function TimelineTab({ locale, entries }: TimelineTabProps) {
                 {/* 詳細（展開時） */}
                 {isExpanded && (
                   <div className="mt-3 space-y-3 animate-fade-in">
-                    {/* アクティビティ */}
                     {entry.manualEntries.length > 0 && (
                       <div className="space-y-1.5">
-                        {entry.manualEntries.map((m) => (
-                          <div key={m.id} className="flex items-center gap-2 text-sm">
-                            <span>{ENTRY_ICONS[m.icon]}</span>
-                            <span className="text-xs text-muted tabular-nums w-12">{m.time}</span>
-                            <span className="flex-1 min-w-0 truncate">{m.text}</span>
-                          </div>
-                        ))}
+                        {entry.manualEntries.map((m) => {
+                          const Icon = ICON_COMPONENTS[m.icon];
+                          return (
+                            <div key={m.id} className="flex items-center gap-2 text-sm">
+                              <Icon size={16} className={ICON_COLORS[m.icon]} />
+                              <span className="text-xs text-muted tabular-nums w-12">{m.time}</span>
+                              <span className="flex-1 min-w-0 truncate">{m.text}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
-                    {/* AI生成日記 */}
                     {entry.aiSummary && (
                       <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3">
                         <p className="text-xs text-emerald-500/60 mb-1">AI</p>
@@ -163,7 +209,6 @@ export default function TimelineTab({ locale, entries }: TimelineTabProps) {
                       </div>
                     )}
 
-                    {/* メモ（箇条書き） */}
                     {(entry.notes ?? []).filter(n => n.trim()).length > 0 && (
                       <div className="bg-subtle rounded-xl p-3 space-y-1">
                         {(entry.notes ?? []).filter(n => n.trim()).map((note, ni) => (
@@ -175,8 +220,7 @@ export default function TimelineTab({ locale, entries }: TimelineTabProps) {
                       </div>
                     )}
 
-                    {/* 何もない場合 */}
-                    {!entry.comment && entry.manualEntries.length === 0 && (
+                    {!entry.aiSummary && (entry.notes ?? []).filter(n => n.trim()).length === 0 && entry.manualEntries.length === 0 && (
                       <p className="text-xs text-muted italic text-center py-2">—</p>
                     )}
                   </div>

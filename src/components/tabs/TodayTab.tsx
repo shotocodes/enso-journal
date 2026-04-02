@@ -3,10 +3,27 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { type Locale, t, tFormat } from "@/lib/i18n";
 import type { DailyJournal, ManualEntry, EntryIcon } from "@/types";
-import { ENTRY_ICONS } from "@/types";
-import { TrashIcon, MoodFace1, MoodFace2, MoodFace3, MoodFace4, MoodFace5 } from "@/components/Icons";
+import {
+  TrashIcon, MoodFace1, MoodFace2, MoodFace3, MoodFace4, MoodFace5,
+  TargetIcon, CheckCircleIcon, FileTextIcon, LightbulbIcon,
+} from "@/components/Icons";
 
 const MOOD_FACES = [MoodFace1, MoodFace2, MoodFace3, MoodFace4, MoodFace5] as const;
+
+// アクティビティアイコンのSVGコンポーネントマッピング
+const ICON_COMPONENTS: Record<EntryIcon, React.FC<{ size?: number; className?: string }>> = {
+  focus: TargetIcon,
+  done: CheckCircleIcon,
+  memo: FileTextIcon,
+  idea: LightbulbIcon,
+};
+
+const ICON_COLORS: Record<EntryIcon, string> = {
+  focus: "text-blue-400",
+  done: "text-emerald-500",
+  memo: "text-amber-400",
+  idea: "text-purple-400",
+};
 
 interface TodayTabProps {
   locale: Locale;
@@ -41,10 +58,9 @@ function getNowTime(): string {
 export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabProps) {
   const [todayStr, setTodayStr] = useState(getTodayStr);
   const [showAddEntry, setShowAddEntry] = useState(false);
-  const [showAiGenerate, setShowAiGenerate] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const noteRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // 日付変更検知
   useEffect(() => {
@@ -56,7 +72,6 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
     return () => document.removeEventListener("visibilitychange", handler);
   }, [todayStr]);
 
-  // 今日のエントリーを取得 or 作成
   const today = useMemo(() => {
     return entries.find((e) => e.date === todayStr) ?? null;
   }, [entries, todayStr]);
@@ -75,40 +90,35 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
     return newEntry;
   }, [entries, todayStr, onEntriesChange]);
 
-  // デバウンス付き更新
   const updateToday = useCallback((updater: (entry: DailyJournal) => DailyJournal) => {
     const current = ensureTodayExists();
     const updated = updater({ ...current, updatedAt: new Date().toISOString() });
     const next = entries.map((e) => (e.date === todayStr ? updated : e));
     if (!entries.find((e) => e.date === todayStr)) next.unshift(updated);
-    // React state は即座に更新
     onEntriesChange(next);
   }, [entries, todayStr, ensureTodayExists, onEntriesChange]);
 
-  // 3年日記: 去年と一昨年の同日
+  // 3年日記
   const flashbacks = useMemo(() => {
     const [y, m, d] = todayStr.split("-");
     const results: { year: number; label: string; entry: DailyJournal | null }[] = [];
     for (let offset = 1; offset <= 2; offset++) {
       const pastDate = `${Number(y) - offset}-${m}-${d}`;
-      const entry = entries.find((e) => e.date === pastDate) ?? null;
       results.push({
         year: Number(y) - offset,
         label: offset === 1 ? t("today.flashback", locale) : t("today.flashback2", locale),
-        entry,
+        entry: entries.find((e) => e.date === pastDate) ?? null,
       });
     }
     return results;
   }, [entries, todayStr, locale]);
 
-  // ストリーク計算
   const streak = useMemo(() => {
     const dates = new Set(entries.map((e) => e.date));
     let count = 0;
     const current = new Date();
     for (let i = 0; i < 1000; i++) {
-      const dateStr = current.toISOString().slice(0, 10);
-      if (dates.has(dateStr)) {
+      if (dates.has(current.toISOString().slice(0, 10))) {
         count++;
         current.setDate(current.getDate() - 1);
       } else break;
@@ -120,25 +130,26 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
     updateToday((e) => ({ ...e, mood: e.mood === mood ? undefined : mood }));
   };
 
-  const handleNotesChange = (notes: string[]) => {
-    updateToday((e) => ({ ...e, notes }));
-  };
-
   const handleAddNote = () => {
     const current = today?.notes ?? [];
-    handleNotesChange([...current, ""]);
+    updateToday((e) => ({ ...e, notes: [...(e.notes ?? []), ""] }));
+    // 次のレンダー後にフォーカス
+    setTimeout(() => {
+      const idx = current.length;
+      noteRefs.current[idx]?.focus();
+    }, 50);
   };
 
   const handleUpdateNote = (index: number, value: string) => {
     const current = [...(today?.notes ?? [])];
     current[index] = value;
-    handleNotesChange(current);
+    updateToday((e) => ({ ...e, notes: current }));
   };
 
   const handleRemoveNote = (index: number) => {
     const current = [...(today?.notes ?? [])];
     current.splice(index, 1);
-    handleNotesChange(current);
+    updateToday((e) => ({ ...e, notes: current }));
   };
 
   const handleSetAiSummary = (aiSummary: string) => {
@@ -201,15 +212,13 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
                       return <Face size={24} className="text-emerald-500 shrink-0" />;
                     })()}
                     <div className="flex-1 min-w-0">
-                      {entry.comment && (
-                        <p className="text-sm leading-relaxed line-clamp-2">{entry.comment}</p>
-                      )}
-                      {entry.manualEntries.length > 0 && (
-                        <p className="text-xs text-muted mt-1">
-                          {tFormat("timeline.activities", locale, entry.manualEntries.length)}
-                        </p>
-                      )}
-                      {!entry.comment && entry.manualEntries.length === 0 && (
+                      {entry.aiSummary ? (
+                        <p className="text-sm leading-relaxed line-clamp-2">{entry.aiSummary}</p>
+                      ) : (entry.notes ?? []).filter(n => n.trim()).length > 0 ? (
+                        <p className="text-sm leading-relaxed line-clamp-2">{(entry.notes ?? []).filter(n => n.trim()).join(" / ")}</p>
+                      ) : entry.manualEntries.length > 0 ? (
+                        <p className="text-xs text-muted">{tFormat("timeline.activities", locale, entry.manualEntries.length)}</p>
+                      ) : (
                         <p className="text-xs text-muted italic">—</p>
                       )}
                     </div>
@@ -235,32 +244,35 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
 
         {(!today || today.manualEntries.length === 0) ? (
           <div className="border-2 border-dashed border-card rounded-2xl p-6 text-center">
-            <p className="text-3xl mb-2">📋</p>
+            <FileTextIcon size={28} className="mx-auto text-muted opacity-40 mb-2" />
             <p className="text-sm text-muted">{t("today.noActivity", locale)}</p>
             <p className="text-xs text-muted mt-1 opacity-50">{t("today.noActivityHint", locale)}</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {today.manualEntries.map((entry) => (
-              <div key={entry.id} className="bg-card border border-card rounded-xl p-3 flex items-center gap-3">
-                <span className="text-lg shrink-0">{ENTRY_ICONS[entry.icon]}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate">{entry.text}</p>
-                  <p className="text-xs text-muted tabular-nums">{entry.time}</p>
+            {today.manualEntries.map((entry) => {
+              const Icon = ICON_COMPONENTS[entry.icon];
+              return (
+                <div key={entry.id} className="bg-card border border-card rounded-xl p-3 flex items-center gap-3">
+                  <Icon size={20} className={`shrink-0 ${ICON_COLORS[entry.icon]}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm truncate">{entry.text}</p>
+                    <p className="text-xs text-muted tabular-nums">{entry.time}</p>
+                  </div>
+                  <button
+                    onClick={() => setDeleteId(entry.id)}
+                    className="text-muted hover:text-red-400 transition-colors shrink-0"
+                  >
+                    <TrashIcon size={14} />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setDeleteId(entry.id)}
-                  className="text-muted hover:text-red-400 transition-colors shrink-0"
-                >
-                  <TrashIcon size={14} />
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* FOCUS連携 CTA（MVPプレースホルダー） */}
+      {/* FOCUS連携 CTA */}
       <p className="text-center text-[10px] text-muted opacity-40">{t("today.focusCTA", locale)}</p>
 
       {/* 今日のまとめ（箇条書き + AI生成） */}
@@ -290,6 +302,7 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
               <div key={i} className="flex items-start gap-2">
                 <span className="text-emerald-500 mt-2.5 text-xs shrink-0">•</span>
                 <input
+                  ref={(el) => { noteRefs.current[i] = el; }}
                   type="text"
                   value={note}
                   onChange={(e) => handleUpdateNote(i, e.target.value)}
@@ -297,10 +310,19 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
                   className="flex-1 bg-transparent text-sm py-1.5 border-b border-card focus:border-emerald-500/50 focus:outline-none placeholder:text-muted transition-colors"
                   style={{ color: "var(--text)" }}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") { e.preventDefault(); handleAddNote(); }
-                    if (e.key === "Backspace" && note === "") { e.preventDefault(); handleRemoveNote(i); }
+                    // IME変換中はスキップ
+                    if (e.nativeEvent.isComposing) return;
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddNote();
+                    }
+                    if (e.key === "Backspace" && note === "") {
+                      e.preventDefault();
+                      handleRemoveNote(i);
+                      // 前のノートにフォーカス
+                      if (i > 0) setTimeout(() => noteRefs.current[i - 1]?.focus(), 50);
+                    }
                   }}
-                  autoFocus={note === ""}
                 />
                 <button
                   onClick={() => handleRemoveNote(i)}
@@ -327,9 +349,7 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     activities: (today?.manualEntries ?? []).map((e) => ({
-                      time: e.time,
-                      text: e.text,
-                      icon: e.icon,
+                      time: e.time, text: e.text, icon: e.icon,
                     })),
                     notes: (today?.notes ?? []).filter((n) => n.trim()),
                     mood: today?.mood,
@@ -352,7 +372,7 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
         )}
       </div>
 
-      {/* 気分セレクター（SVGフェイス） */}
+      {/* 気分セレクター */}
       <div className="bg-card border border-card rounded-2xl p-5 space-y-4">
         <h3 className="text-sm font-bold">{t("today.mood", locale)}</h3>
         <div className="flex justify-around">
@@ -389,38 +409,19 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
 
       {/* エントリー追加モーダル */}
       {showAddEntry && (
-        <AddEntryModal
-          locale={locale}
-          onSave={handleAddEntry}
-          onClose={() => setShowAddEntry(false)}
-        />
+        <AddEntryModal locale={locale} onSave={handleAddEntry} onClose={() => setShowAddEntry(false)} />
       )}
 
-      {/* エントリー削除確認モーダル */}
+      {/* 削除確認モーダル */}
       {deleteId && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center animate-fade-in"
-          onClick={() => setDeleteId(null)}
-        >
-          <div
-            className="w-full sm:max-w-sm bg-modal rounded-t-3xl sm:rounded-2xl p-6 animate-celebrate space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-center sm:hidden">
-              <div className="w-10 h-1 rounded-full bg-subtle" />
-            </div>
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in" onClick={() => setDeleteId(null)}>
+          <div className="w-full max-w-sm bg-modal rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <p className="text-sm text-center">{t("modal.confirm", locale)}</p>
             <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteId(null)}
-                className="flex-1 py-2.5 rounded-xl text-sm bg-subtle text-muted hover:opacity-80 transition-opacity"
-              >
+              <button onClick={() => setDeleteId(null)} className="flex-1 py-2.5 rounded-xl text-sm bg-subtle text-muted hover:opacity-80 transition-opacity">
                 {t("modal.cancel", locale)}
               </button>
-              <button
-                onClick={() => handleDeleteEntry(deleteId)}
-                className="flex-1 py-2.5 rounded-xl text-sm text-red-400 bg-subtle hover:opacity-80 transition-opacity"
-              >
+              <button onClick={() => handleDeleteEntry(deleteId)} className="flex-1 py-2.5 rounded-xl text-sm text-red-400 bg-subtle hover:opacity-80 transition-opacity">
                 {t("modal.delete", locale)}
               </button>
             </div>
@@ -444,6 +445,7 @@ function AddEntryModal({
   const [time, setTime] = useState(getNowTime);
   const [text, setText] = useState("");
   const [icon, setIcon] = useState<EntryIcon>("memo");
+  const [composing, setComposing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -452,12 +454,7 @@ function AddEntryModal({
 
   const handleSave = () => {
     if (!text.trim()) return;
-    onSave({
-      id: Date.now().toString(),
-      time,
-      text: text.trim(),
-      icon,
-    });
+    onSave({ id: Date.now().toString(), time, text: text.trim(), icon });
   };
 
   const icons: { id: EntryIcon; key: string }[] = [
@@ -468,17 +465,8 @@ function AddEntryModal({
   ];
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="w-full sm:max-w-sm bg-modal rounded-t-3xl sm:rounded-2xl p-6 animate-celebrate space-y-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-center sm:hidden">
-          <div className="w-10 h-1 rounded-full bg-subtle" />
-        </div>
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-sm bg-modal rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
 
         <h3 className="text-sm font-bold text-center">{t("entry.add.title", locale)}</h3>
 
@@ -503,39 +491,44 @@ function AddEntryModal({
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder={t("entry.add.placeholder", locale)}
-            onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
+            onCompositionStart={() => setComposing(true)}
+            onCompositionEnd={() => setComposing(false)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !composing) handleSave();
+            }}
             className="w-full bg-input border border-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 placeholder:text-muted"
             style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text)" }}
           />
         </div>
 
-        {/* アイコン選択 */}
+        {/* アイコン選択（SVGアイコン + カラー） */}
         <div>
           <label className="text-xs text-muted block mb-2">{t("entry.add.icon", locale)}</label>
           <div className="flex gap-2">
-            {icons.map(({ id, key }) => (
-              <button
-                key={id}
-                onClick={() => setIcon(id)}
-                className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl text-xs transition-colors ${
-                  icon === id
-                    ? "bg-emerald-500/20 text-emerald-500 border border-emerald-500/30"
-                    : "bg-subtle text-muted border border-transparent hover:opacity-80"
-                }`}
-              >
-                <span className="text-lg">{ENTRY_ICONS[id]}</span>
-                <span>{t(key, locale)}</span>
-              </button>
-            ))}
+            {icons.map(({ id, key }) => {
+              const Icon = ICON_COMPONENTS[id];
+              const isSelected = icon === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setIcon(id)}
+                  className={`flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-xs transition-all ${
+                    isSelected
+                      ? "bg-emerald-500/15 border border-emerald-500/30"
+                      : "bg-subtle border border-transparent hover:opacity-80"
+                  }`}
+                >
+                  <Icon size={22} className={isSelected ? ICON_COLORS[id] : "text-muted"} />
+                  <span className={isSelected ? "text-emerald-500" : "text-muted"}>{t(key, locale)}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* ボタン */}
         <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl text-sm bg-subtle text-muted hover:opacity-80 transition-opacity"
-          >
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm bg-subtle text-muted hover:opacity-80 transition-opacity">
             {t("modal.cancel", locale)}
           </button>
           <button

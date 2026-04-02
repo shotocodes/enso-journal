@@ -31,7 +31,9 @@ export default function SettingsTab({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `enso-journal-${new Date().toISOString().slice(0, 10)}.json`;
+    const d = new Date();
+    const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    a.download = `enso-journal-${ds}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };

@@ -32,8 +32,12 @@ interface TodayTabProps {
   onEntriesChange: (entries: DailyJournal[]) => void;
 }
 
+function toLocalDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 function getTodayStr(): string {
-  return new Date().toISOString().slice(0, 10);
+  return toLocalDateStr(new Date());
 }
 
 function getTimeOfDay(): "morning" | "afternoon" | "evening" | "night" {
@@ -121,7 +125,7 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
     let count = 0;
     const current = new Date();
     for (let i = 0; i < 1000; i++) {
-      if (dates.has(current.toISOString().slice(0, 10))) {
+      if (dates.has(toLocalDateStr(current))) {
         count++;
         current.setDate(current.getDate() - 1);
       } else break;

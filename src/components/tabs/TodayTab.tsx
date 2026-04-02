@@ -152,8 +152,13 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
       {(hasFlashbackData || isFirstTime) && (
         <div className="space-y-3">
           {isFirstTime ? (
-            <div className="bg-card border border-card rounded-2xl p-4 text-center">
-              <p className="text-2xl mb-2">📖</p>
+            <div className="bg-card border border-emerald-500/10 rounded-2xl p-5 text-center space-y-2">
+              <svg width={32} height={32} viewBox="0 0 100 100" fill="none" className="mx-auto text-emerald-500 opacity-60">
+                <circle cx="50" cy="50" r="32" stroke="currentColor" strokeWidth="5" fill="none" opacity="0.9" />
+                <line x1="38" y1="42" x2="62" y2="42" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.4" />
+                <line x1="38" y1="50" x2="62" y2="50" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.65" />
+                <line x1="38" y1="58" x2="62" y2="58" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="1" />
+              </svg>
               <p className="text-xs text-muted">{t("today.flashback.first", locale)}</p>
             </div>
           ) : (
@@ -227,9 +232,7 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
       </div>
 
       {/* FOCUS連携 CTA（MVPプレースホルダー） */}
-      <div className="bg-card border border-card rounded-2xl p-4 text-center opacity-50">
-        <p className="text-xs text-muted">{t("today.focusCTA", locale)}</p>
-      </div>
+      <p className="text-center text-[10px] text-muted opacity-40">{t("today.focusCTA", locale)}</p>
 
       {/* ひとことコメント */}
       <div className="bg-card border border-card rounded-2xl p-5 space-y-3">
@@ -259,7 +262,7 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
                 className="flex flex-col items-center gap-2 transition-all"
               >
                 <span className={`text-3xl transition-transform duration-200 ${
-                  isActive ? "scale-125" : "opacity-30 hover:opacity-60 scale-90"
+                  isActive ? "scale-125" : "opacity-40 hover:opacity-70 scale-90"
                 }`}>
                   {emoji}
                 </span>

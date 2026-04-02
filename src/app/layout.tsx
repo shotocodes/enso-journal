@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ensolife.app/journal"),
   title: "ENSO JOURNAL",
   description: "Your actions become your journal. A 3-year journal with auto action logs by ENSO.",
   openGraph: {

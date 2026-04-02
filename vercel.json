@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://ensolife.app/journal",
+      "permanent": true
+    },
+    {
+      "source": "/:path((?!journal).*)",
+      "destination": "https://ensolife.app/journal",
+      "permanent": true
+    }
+  ]
+}

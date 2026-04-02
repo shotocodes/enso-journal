@@ -59,8 +59,8 @@ Rules:
 
     if (!response.ok) {
       const err = await response.text();
-      console.error("[generate] Anthropic API error:", err);
-      return NextResponse.json({ error: "AI generation failed" }, { status: 500 });
+      console.error("[generate] Anthropic API error:", response.status, err);
+      return NextResponse.json({ error: "AI generation failed", status: response.status, detail: err }, { status: 500 });
     }
 
     const data = await response.json();

@@ -12,7 +12,7 @@ export default function MenuTab({ locale }: MenuTabProps) {
     <div className="animate-tab-enter space-y-5">
       <h2 className="text-lg font-bold mb-4">{t("menu.title", locale)}</h2>
 
-      {/* App Info（TIMER/FOCUS統一パターン） */}
+      {/* App Info */}
       <div className="bg-card rounded-2xl p-6 border border-card text-center">
         <EnsoLogo size={64} className="mx-auto mb-3 text-emerald-500" animate />
         <h3 className="text-lg font-bold">{t("app.name", locale)}</h3>
@@ -20,13 +20,13 @@ export default function MenuTab({ locale }: MenuTabProps) {
         <p className="text-xs text-muted mt-3 leading-relaxed">{t("app.description", locale)}</p>
       </div>
 
-      {/* ENSO Apps（TIMER/FOCUS統一パターン） */}
+      {/* ENSO Apps */}
       <div className="bg-card rounded-2xl p-5 border border-card">
         <h3 className="text-sm font-bold mb-3">{t("menu.ensoApps", locale)}</h3>
         <div className="space-y-1">
           {/* ENSO TIMER */}
           <a
-            href="https://enso-timer-2.vercel.app"
+            href="https://ensolife.app/timer"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 p-3 -mx-1 rounded-xl hover:bg-subtle transition-colors"
@@ -46,7 +46,7 @@ export default function MenuTab({ locale }: MenuTabProps) {
 
           {/* ENSO FOCUS */}
           <a
-            href="https://enso-focus.vercel.app"
+            href="https://ensolife.app/focus"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 p-3 -mx-1 rounded-xl hover:bg-subtle transition-colors"
@@ -94,7 +94,7 @@ export default function MenuTab({ locale }: MenuTabProps) {
         </div>
       </div>
 
-      {/* Credits（TIMER/FOCUS統一パターン） */}
+      {/* Credits */}
       <div className="bg-card rounded-2xl p-5 border border-card">
         <h3 className="text-sm font-bold mb-2">{t("menu.credits", locale)}</h3>
         <p className="text-xs text-muted">{t("app.credit", locale)}</p>

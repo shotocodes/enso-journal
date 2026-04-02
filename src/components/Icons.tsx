@@ -167,6 +167,32 @@ export function LightbulbIcon({ size = 22, className = "" }: IconProps) {
   );
 }
 
+export function FireIcon({ size = 22, className = "" }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M12 2c.5 3.5-1.5 6-1.5 6 1.5 1 3 .5 3 .5s-1 2.5-3 4c-2 1.5-4 1-4 1s0-2 1-3.5C8.5 8.5 7 7 7 4c0 0 2 1 3.5 1S11.5 2 12 2z" />
+      <path d="M10 15c0 1.1.9 2 2 2s2-.9 2-2c0-1.5-2-3-2-3s-2 1.5-2 3z" />
+    </svg>
+  );
+}
+
+export function SparkleIcon({ size = 22, className = "" }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M12 3v2M12 19v2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M3 12h2M19 12h2M5.6 18.4l1.4-1.4M17 7l1.4-1.4" />
+      <circle cx="12" cy="12" r="4" />
+    </svg>
+  );
+}
+
+export function PenIcon({ size = 16, className = "" }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+    </svg>
+  );
+}
+
 export function SearchIcon({ size = 16, className = "" }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>

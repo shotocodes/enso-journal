@@ -23,7 +23,7 @@ const translations: Translations = {
   "tabs.menu":     { ja: "メニュー",    en: "Menu",     zh: "菜单",   ko: "메뉴" },
 
   // ===== Today =====
-  "today.streak":          { ja: "🔥{0}日", en: "🔥{0}d", zh: "🔥{0}天", ko: "🔥{0}일" },
+  "today.streak":          { ja: "{0}日", en: "{0}d", zh: "{0}天", ko: "{0}일" },
   "today.flashback":       { ja: "去年の今日", en: "This day last year", zh: "去年的今天", ko: "작년 오늘" },
   "today.flashback2":      { ja: "一昨年の今日", en: "This day 2 years ago", zh: "前年的今天", ko: "재작년 오늘" },
   "today.flashback.empty": { ja: "来年、ここにあなたの記録が表示されます", en: "Next year, your entry will appear here", zh: "明年，你的记录将显示在这里", ko: "내년에 여기에 기록이 표시됩니다" },
@@ -46,7 +46,7 @@ const translations: Translations = {
   "today.notes":           { ja: "今日のまとめ", en: "Today's Notes", zh: "今日总结", ko: "오늘의 정리" },
   "today.addNote":         { ja: "+ メモ", en: "+ Note", zh: "+ 备注", ko: "+ 메모" },
   "today.notesHint":       { ja: "「+ メモ」で今日の気づきを書き留めよう", en: "Tap \"+ Note\" to capture your thoughts", zh: "点击\"+ 备注\"记下今天的想法", ko: "\"+ 메모\"를 눌러 오늘의 생각을 적어보세요" },
-  "today.generateAi":      { ja: "✨ AIで日記を生成", en: "✨ Generate with AI", zh: "✨ AI生成日记", ko: "✨ AI로 일기 생성" },
+  "today.generateAi":      { ja: "AIで日記を生成", en: "Generate with AI", zh: "AI生成日记", ko: "AI로 일기 생성" },
   "today.aiGenerating":    { ja: "生成中...", en: "Generating...", zh: "生成中...", ko: "생성 중..." },
   "today.autosaved":       { ja: "自動保存済み ✓", en: "Auto-saved ✓", zh: "已自动保存 ✓", ko: "자동 저장됨 ✓" },
   "today.focusCTA":        { ja: "ENSO FOCUSで集中を記録しよう", en: "Track focus with ENSO FOCUS", zh: "使用ENSO FOCUS记录专注", ko: "ENSO FOCUS로 집중을 기록하세요" },
@@ -64,6 +64,8 @@ const translations: Translations = {
   "entry.add.placeholder": { ja: "例: React開発、ミーティング...", en: "e.g. React coding, Meeting...", zh: "例如: React开发, 会议...", ko: "예: React 개발, 미팅..." },
   "entry.add.icon":        { ja: "種類", en: "Type", zh: "类型", ko: "유형" },
   "entry.add.save":        { ja: "追加する", en: "Add", zh: "添加", ko: "추가하기" },
+  "entry.edit.title":      { ja: "アクティビティを編集", en: "Edit Activity", zh: "编辑活动", ko: "활동 편집" },
+  "entry.edit.save":       { ja: "保存する", en: "Save", zh: "保存", ko: "저장하기" },
 
   // ===== Timeline =====
   "timeline.title":     { ja: "タイムライン", en: "Timeline", zh: "时间线", ko: "타임라인" },

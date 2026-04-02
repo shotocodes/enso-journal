@@ -4,7 +4,8 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { type Locale, t, tFormat } from "@/lib/i18n";
 import type { DailyJournal, ManualEntry, EntryIcon } from "@/types";
 import {
-  TrashIcon, MoodFace1, MoodFace2, MoodFace3, MoodFace4, MoodFace5,
+  TrashIcon, PenIcon, FireIcon, SparkleIcon,
+  MoodFace1, MoodFace2, MoodFace3, MoodFace4, MoodFace5,
   TargetIcon, CheckCircleIcon, FileTextIcon, LightbulbIcon,
 } from "@/components/Icons";
 
@@ -58,6 +59,7 @@ function getNowTime(): string {
 export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabProps) {
   const [todayStr, setTodayStr] = useState(getTodayStr);
   const [showAddEntry, setShowAddEntry] = useState(false);
+  const [editEntry, setEditEntry] = useState<ManualEntry | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const noteRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -172,6 +174,14 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
     setDeleteId(null);
   };
 
+  const handleEditEntry = (updated: ManualEntry) => {
+    updateToday((e) => ({
+      ...e,
+      manualEntries: e.manualEntries.map((m) => m.id === updated.id ? updated : m).sort((a, b) => a.time.localeCompare(b.time)),
+    }));
+    setEditEntry(null);
+  };
+
   const hasFlashbackData = flashbacks.some((f) => f.entry !== null);
   const isFirstTime = entries.length <= 1 && !hasFlashbackData;
 
@@ -181,7 +191,10 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold">{formatDate(todayStr, locale)}</h2>
         {streak > 0 && (
-          <span className="text-sm font-medium">{tFormat("today.streak", locale, streak)}</span>
+          <span className="text-sm font-medium flex items-center gap-1">
+            <FireIcon size={16} className="text-orange-400" />
+            {tFormat("today.streak", locale, streak)}
+          </span>
         )}
       </div>
 
@@ -259,12 +272,20 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
                     <p className="text-sm truncate">{entry.text}</p>
                     <p className="text-xs text-muted tabular-nums">{entry.time}</p>
                   </div>
-                  <button
-                    onClick={() => setDeleteId(entry.id)}
-                    className="text-muted hover:text-red-400 transition-colors shrink-0"
-                  >
-                    <TrashIcon size={14} />
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => setEditEntry(entry)}
+                      className="text-muted hover:text-emerald-500 transition-colors"
+                    >
+                      <PenIcon size={14} />
+                    </button>
+                    <button
+                      onClick={() => setDeleteId(entry.id)}
+                      className="text-muted hover:text-red-400 transition-colors"
+                    >
+                      <TrashIcon size={14} />
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -367,7 +388,10 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
             disabled={aiLoading}
             className="w-full py-2.5 rounded-xl text-sm font-medium bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors border border-emerald-500/20 disabled:opacity-50"
           >
-            {aiLoading ? t("today.aiGenerating", locale) : t("today.generateAi", locale)}
+            <span className="flex items-center justify-center gap-1.5">
+              {!aiLoading && <SparkleIcon size={16} />}
+              {aiLoading ? t("today.aiGenerating", locale) : t("today.generateAi", locale)}
+            </span>
           </button>
         )}
       </div>
@@ -412,6 +436,11 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
         <AddEntryModal locale={locale} onSave={handleAddEntry} onClose={() => setShowAddEntry(false)} />
       )}
 
+      {/* エントリー編集モーダル */}
+      {editEntry && (
+        <AddEntryModal locale={locale} initial={editEntry} onSave={handleEditEntry} onClose={() => setEditEntry(null)} />
+      )}
+
       {/* 削除確認モーダル */}
       {deleteId && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in" onClick={() => setDeleteId(null)}>
@@ -432,19 +461,22 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
   );
 }
 
-// ===== エントリー追加モーダル =====
+// ===== エントリー追加/編集モーダル =====
 function AddEntryModal({
   locale,
+  initial,
   onSave,
   onClose,
 }: {
   locale: Locale;
+  initial?: ManualEntry;
   onSave: (entry: ManualEntry) => void;
   onClose: () => void;
 }) {
-  const [time, setTime] = useState(getNowTime);
-  const [text, setText] = useState("");
-  const [icon, setIcon] = useState<EntryIcon>("memo");
+  const isEdit = !!initial;
+  const [time, setTime] = useState(initial?.time ?? getNowTime());
+  const [text, setText] = useState(initial?.text ?? "");
+  const [icon, setIcon] = useState<EntryIcon>(initial?.icon ?? "memo");
   const [composing, setComposing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -454,7 +486,7 @@ function AddEntryModal({
 
   const handleSave = () => {
     if (!text.trim()) return;
-    onSave({ id: Date.now().toString(), time, text: text.trim(), icon });
+    onSave({ id: initial?.id ?? Date.now().toString(), time, text: text.trim(), icon });
   };
 
   const icons: { id: EntryIcon; key: string }[] = [
@@ -466,9 +498,11 @@ function AddEntryModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-sm bg-modal rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-sm bg-modal rounded-2xl p-5 space-y-3 overflow-hidden" onClick={(e) => e.stopPropagation()}>
 
-        <h3 className="text-sm font-bold text-center">{t("entry.add.title", locale)}</h3>
+        <h3 className="text-sm font-bold text-center">
+          {isEdit ? t("entry.edit.title", locale) : t("entry.add.title", locale)}
+        </h3>
 
         {/* 時刻 */}
         <div>
@@ -477,7 +511,7 @@ function AddEntryModal({
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
-            className="w-full bg-input border border-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="w-full bg-input border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 appearance-none"
             style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text)" }}
           />
         </div>
@@ -536,7 +570,7 @@ function AddEntryModal({
             disabled={!text.trim()}
             className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
-            {t("entry.add.save", locale)}
+            {t(isEdit ? "entry.edit.save" : "entry.add.save", locale)}
           </button>
         </div>
       </div>

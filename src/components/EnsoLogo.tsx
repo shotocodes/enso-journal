@@ -31,17 +31,17 @@ export default function EnsoLogo({
       {/* 3本線（グラデーション: 過去→現在で濃くなる） */}
       <line x1="38" y1="42" x2="62" y2="42" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.4">
         {animate && (
-          <animate attributeName="opacity" values="0;0.4" dur="0.3s" begin="0s" fill="freeze" />
+          <animate attributeName="opacity" values="0;0.4;0.4;0" dur="3s" repeatCount="indefinite" />
         )}
       </line>
       <line x1="38" y1="50" x2="62" y2="50" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.65">
         {animate && (
-          <animate attributeName="opacity" values="0;0.65" dur="0.3s" begin="0.15s" fill="freeze" />
+          <animate attributeName="opacity" values="0;0;0.65;0.65;0" dur="3s" repeatCount="indefinite" />
         )}
       </line>
       <line x1="38" y1="58" x2="62" y2="58" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="1">
         {animate && (
-          <animate attributeName="opacity" values="0;1" dur="0.3s" begin="0.3s" fill="freeze" />
+          <animate attributeName="opacity" values="0;0;0;1;1;0" dur="3s" repeatCount="indefinite" />
         )}
       </line>
     </svg>

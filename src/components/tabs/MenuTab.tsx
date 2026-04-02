@@ -24,6 +24,18 @@ export default function MenuTab({ locale }: MenuTabProps) {
       <div className="bg-card rounded-2xl p-5 border border-card">
         <h3 className="text-sm font-bold mb-3">{t("menu.ensoApps", locale)}</h3>
         <div className="space-y-1">
+          {/* Dashboard */}
+          <a href="https://ensolife.app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 -mx-1 rounded-xl hover:bg-subtle transition-colors">
+            <svg width={36} height={36} viewBox="0 0 100 100" fill="none" className="text-emerald-500 shrink-0">
+              <circle cx="50" cy="50" r="32" stroke="currentColor" strokeWidth="5" fill="none" opacity="0.9" />
+            </svg>
+            <div className="min-w-0 flex-1">
+              <span className="text-sm font-medium block">{t("menu.ensoDashboard", locale)}</span>
+              <span className="text-xs text-muted block">{t("menu.ensoDashboardDesc", locale)}</span>
+            </div>
+            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="text-muted shrink-0"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" /></svg>
+          </a>
+
           {/* ENSO TIMER */}
           <a
             href="https://ensolife.app/timer"
@@ -64,18 +76,18 @@ export default function MenuTab({ locale }: MenuTabProps) {
             </svg>
           </a>
 
-          {/* ENSO TASK - Coming Soon */}
-          <div className="flex items-center gap-3 p-3 -mx-1 rounded-xl opacity-40">
+          {/* ENSO TASK */}
+          <a href="https://ensolife.app/task" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 -mx-1 rounded-xl hover:bg-subtle transition-colors">
             <svg width={36} height={36} viewBox="0 0 100 100" fill="none" className="text-emerald-500 shrink-0">
               <circle cx="50" cy="50" r="32" stroke="currentColor" strokeWidth="5" fill="none" opacity="0.9" />
-              <polyline points="40,50 48,58 62,42" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              <polyline points="38,50 46,58 62,40" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <span className="text-sm font-medium block">{t("menu.ensoTask", locale)}</span>
               <span className="text-xs text-muted block">{t("menu.ensoTaskDesc", locale)}</span>
-              <span className="text-[10px] text-muted block mt-0.5">{t("menu.comingSoon", locale)}</span>
             </div>
-          </div>
+            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="text-muted shrink-0"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" /></svg>
+          </a>
 
           {/* ENSO COMMUNITY - Coming Soon */}
           <div className="flex items-center gap-3 p-3 -mx-1 rounded-xl opacity-40">

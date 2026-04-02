@@ -1,0 +1,59 @@
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "ENSO JOURNAL",
+  description: "Your actions become your journal. A 3-year journal with auto action logs by ENSO.",
+  openGraph: {
+    title: "ENSO JOURNAL",
+    description: "やったことが、勝手に日記になる",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "ENSO JOURNAL",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#0a0a0a",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="ja" data-theme="dark">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{ background: "var(--bg)", color: "var(--text)" }}
+      >
+        {children}
+      </body>
+    </html>
+  );
+}

@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { type Locale, t, tFormat } from "@/lib/i18n";
 import type { DailyJournal, ManualEntry, EntryIcon } from "@/types";
-import { ENTRY_ICONS, MOODS } from "@/types";
-import { TrashIcon } from "@/components/Icons";
+import { ENTRY_ICONS } from "@/types";
+import { TrashIcon, MoodFace1, MoodFace2, MoodFace3, MoodFace4, MoodFace5 } from "@/components/Icons";
+
+const MOOD_FACES = [MoodFace1, MoodFace2, MoodFace3, MoodFace4, MoodFace5] as const;
 
 interface TodayTabProps {
   locale: Locale;
@@ -39,6 +41,8 @@ function getNowTime(): string {
 export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabProps) {
   const [todayStr, setTodayStr] = useState(getTodayStr);
   const [showAddEntry, setShowAddEntry] = useState(false);
+  const [showAiGenerate, setShowAiGenerate] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -59,9 +63,10 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
 
   const ensureTodayExists = useCallback((): DailyJournal => {
     const existing = entries.find((e) => e.date === todayStr);
-    if (existing) return existing;
+    if (existing) return { ...existing, notes: existing.notes ?? [] };
     const newEntry: DailyJournal = {
       date: todayStr,
+      notes: [],
       manualEntries: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -115,8 +120,29 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
     updateToday((e) => ({ ...e, mood: e.mood === mood ? undefined : mood }));
   };
 
-  const handleCommentChange = (comment: string) => {
-    updateToday((e) => ({ ...e, comment }));
+  const handleNotesChange = (notes: string[]) => {
+    updateToday((e) => ({ ...e, notes }));
+  };
+
+  const handleAddNote = () => {
+    const current = today?.notes ?? [];
+    handleNotesChange([...current, ""]);
+  };
+
+  const handleUpdateNote = (index: number, value: string) => {
+    const current = [...(today?.notes ?? [])];
+    current[index] = value;
+    handleNotesChange(current);
+  };
+
+  const handleRemoveNote = (index: number) => {
+    const current = [...(today?.notes ?? [])];
+    current.splice(index, 1);
+    handleNotesChange(current);
+  };
+
+  const handleSetAiSummary = (aiSummary: string) => {
+    updateToday((e) => ({ ...e, aiSummary }));
   };
 
   const handleAddEntry = (entry: ManualEntry) => {
@@ -170,7 +196,10 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
                     <span className="text-xs text-muted tabular-nums">{entry.date}</span>
                   </div>
                   <div className="flex items-start gap-3">
-                    {entry.mood && <span className="text-xl">{MOODS[entry.mood - 1]}</span>}
+                    {entry.mood && (() => {
+                      const Face = MOOD_FACES[entry.mood - 1];
+                      return <Face size={24} className="text-emerald-500 shrink-0" />;
+                    })()}
                     <div className="flex-1 min-w-0">
                       {entry.comment && (
                         <p className="text-sm leading-relaxed line-clamp-2">{entry.comment}</p>
@@ -234,25 +263,100 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
       {/* FOCUS連携 CTA（MVPプレースホルダー） */}
       <p className="text-center text-[10px] text-muted opacity-40">{t("today.focusCTA", locale)}</p>
 
-      {/* ひとことコメント */}
+      {/* 今日のまとめ（箇条書き + AI生成） */}
       <div className="bg-card border border-card rounded-2xl p-5 space-y-3">
-        <h3 className="text-sm font-bold">{t("today.comment", locale)}</h3>
-        <textarea
-          value={today?.comment ?? ""}
-          onChange={(e) => handleCommentChange(e.target.value)}
-          placeholder={t(`today.comment.${getTimeOfDay()}`, locale)}
-          rows={2}
-          maxLength={200}
-          className="w-full bg-input border border-input rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500/50 placeholder:text-muted leading-relaxed"
-          style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text)" }}
-        />
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold">{t("today.notes", locale)}</h3>
+          <button
+            onClick={handleAddNote}
+            className="text-xs font-medium text-emerald-500 hover:text-emerald-400 transition-colors"
+          >
+            {t("today.addNote", locale)}
+          </button>
+        </div>
+
+        {/* AI生成の日記 */}
+        {today?.aiSummary && (
+          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3">
+            <p className="text-xs text-emerald-500/60 mb-1">AI</p>
+            <p className="text-sm leading-relaxed whitespace-pre-wrap">{today.aiSummary}</p>
+          </div>
+        )}
+
+        {/* 箇条書きメモ */}
+        {(today?.notes ?? []).length > 0 ? (
+          <div className="space-y-2">
+            {(today?.notes ?? []).map((note, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <span className="text-emerald-500 mt-2.5 text-xs shrink-0">•</span>
+                <input
+                  type="text"
+                  value={note}
+                  onChange={(e) => handleUpdateNote(i, e.target.value)}
+                  placeholder={t(`today.comment.${getTimeOfDay()}`, locale)}
+                  className="flex-1 bg-transparent text-sm py-1.5 border-b border-card focus:border-emerald-500/50 focus:outline-none placeholder:text-muted transition-colors"
+                  style={{ color: "var(--text)" }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") { e.preventDefault(); handleAddNote(); }
+                    if (e.key === "Backspace" && note === "") { e.preventDefault(); handleRemoveNote(i); }
+                  }}
+                  autoFocus={note === ""}
+                />
+                <button
+                  onClick={() => handleRemoveNote(i)}
+                  className="text-muted hover:text-red-400 transition-colors mt-2 shrink-0"
+                >
+                  <TrashIcon size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-muted text-center py-2 opacity-50">{t("today.notesHint", locale)}</p>
+        )}
+
+        {/* AI日記生成ボタン */}
+        {(today?.manualEntries ?? []).length > 0 && (
+          <button
+            onClick={async () => {
+              if (aiLoading) return;
+              setAiLoading(true);
+              try {
+                const res = await fetch("/journal/api/generate", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    activities: (today?.manualEntries ?? []).map((e) => ({
+                      time: e.time,
+                      text: e.text,
+                      icon: e.icon,
+                    })),
+                    notes: (today?.notes ?? []).filter((n) => n.trim()),
+                    mood: today?.mood,
+                    locale,
+                  }),
+                });
+                const data = await res.json();
+                if (data.summary) handleSetAiSummary(data.summary);
+              } catch (e) {
+                console.error("AI generation failed:", e);
+              } finally {
+                setAiLoading(false);
+              }
+            }}
+            disabled={aiLoading}
+            className="w-full py-2.5 rounded-xl text-sm font-medium bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors border border-emerald-500/20 disabled:opacity-50"
+          >
+            {aiLoading ? t("today.aiGenerating", locale) : t("today.generateAi", locale)}
+          </button>
+        )}
       </div>
 
-      {/* 気分セレクター */}
+      {/* 気分セレクター（SVGフェイス） */}
       <div className="bg-card border border-card rounded-2xl p-5 space-y-4">
         <h3 className="text-sm font-bold">{t("today.mood", locale)}</h3>
         <div className="flex justify-around">
-          {MOODS.map((emoji, i) => {
+          {MOOD_FACES.map((Face, i) => {
             const moodVal = (i + 1) as 1 | 2 | 3 | 4 | 5;
             const isActive = today?.mood === moodVal;
             return (
@@ -261,11 +365,14 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
                 onClick={() => handleMoodChange(moodVal)}
                 className="flex flex-col items-center gap-2 transition-all"
               >
-                <span className={`text-3xl transition-transform duration-200 ${
-                  isActive ? "scale-125" : "opacity-40 hover:opacity-70 scale-90"
-                }`}>
-                  {emoji}
-                </span>
+                <Face
+                  size={36}
+                  className={`transition-all duration-200 ${
+                    isActive
+                      ? "text-emerald-500 scale-110"
+                      : "text-muted opacity-40 hover:opacity-70 scale-90"
+                  }`}
+                />
                 <span className={`text-[10px] font-medium ${
                   isActive ? "text-emerald-500" : "text-muted"
                 }`}>

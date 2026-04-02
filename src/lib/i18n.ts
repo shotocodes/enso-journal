@@ -43,6 +43,11 @@ const translations: Translations = {
   "today.mood.3":          { ja: "ふつう", en: "Normal", zh: "普通", ko: "보통" },
   "today.mood.4":          { ja: "いい感じ", en: "Good", zh: "不错", ko: "좋은" },
   "today.mood.5":          { ja: "最高！", en: "Great!", zh: "太棒了！", ko: "최고!" },
+  "today.notes":           { ja: "今日のまとめ", en: "Today's Notes", zh: "今日总结", ko: "오늘의 정리" },
+  "today.addNote":         { ja: "+ メモ", en: "+ Note", zh: "+ 备注", ko: "+ 메모" },
+  "today.notesHint":       { ja: "「+ メモ」で今日の気づきを書き留めよう", en: "Tap \"+ Note\" to capture your thoughts", zh: "点击\"+ 备注\"记下今天的想法", ko: "\"+ 메모\"를 눌러 오늘의 생각을 적어보세요" },
+  "today.generateAi":      { ja: "✨ AIで日記を生成", en: "✨ Generate with AI", zh: "✨ AI生成日记", ko: "✨ AI로 일기 생성" },
+  "today.aiGenerating":    { ja: "生成中...", en: "Generating...", zh: "生成中...", ko: "생성 중..." },
   "today.autosaved":       { ja: "自動保存済み ✓", en: "Auto-saved ✓", zh: "已自动保存 ✓", ko: "자동 저장됨 ✓" },
   "today.focusCTA":        { ja: "ENSO FOCUSで集中を記録しよう", en: "Track focus with ENSO FOCUS", zh: "使用ENSO FOCUS记录专注", ko: "ENSO FOCUS로 집중을 기록하세요" },
 

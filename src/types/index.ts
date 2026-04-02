@@ -10,7 +10,9 @@ export type ThemeMode = "dark" | "light" | "system";
 export interface DailyJournal {
   date: string;                  // "YYYY-MM-DD"
   mood?: 1 | 2 | 3 | 4 | 5;
-  comment?: string;              // 最大200文字
+  comment?: string;              // 後方互換: 旧フリーテキスト
+  notes: string[];               // 箇条書きメモ
+  aiSummary?: string;            // AI生成の日記テキスト
   manualEntries: ManualEntry[];
   createdAt: string;             // ISO 8601
   updatedAt: string;             // ISO 8601

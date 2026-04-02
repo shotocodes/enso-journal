@@ -3,7 +3,10 @@
 import { useState, useMemo } from "react";
 import { type Locale, t, tFormat } from "@/lib/i18n";
 import type { DailyJournal } from "@/types";
-import { MOODS, ENTRY_ICONS } from "@/types";
+import { ENTRY_ICONS } from "@/types";
+import { MoodFace1, MoodFace2, MoodFace3, MoodFace4, MoodFace5 } from "@/components/Icons";
+
+const MOOD_FACES = [MoodFace1, MoodFace2, MoodFace3, MoodFace4, MoodFace5] as const;
 
 interface TimelineTabProps {
   locale: Locale;
@@ -32,7 +35,8 @@ export default function TimelineTab({ locale, entries }: TimelineTabProps) {
     if (searchText.trim()) {
       const q = searchText.toLowerCase();
       result = result.filter((e) =>
-        (e.comment ?? "").toLowerCase().includes(q) ||
+        (e.aiSummary ?? "").toLowerCase().includes(q) ||
+        (e.notes ?? []).some((n) => n.toLowerCase().includes(q)) ||
         e.manualEntries.some((m) => m.text.toLowerCase().includes(q))
       );
     }
@@ -60,15 +64,20 @@ export default function TimelineTab({ locale, entries }: TimelineTabProps) {
             >
               {t("timeline.all", locale)}
             </button>
-            {MOODS.map((emoji, i) => (
+            {MOOD_FACES.map((Face, i) => (
               <button
                 key={i}
                 onClick={() => setMoodFilter(moodFilter === i + 1 ? null : i + 1)}
-                className={`text-xl transition-transform ${
-                  moodFilter === i + 1 ? "scale-125" : "opacity-30 hover:opacity-60 scale-90"
-                }`}
+                className="transition-all"
               >
-                {emoji}
+                <Face
+                  size={24}
+                  className={`transition-all ${
+                    moodFilter === i + 1
+                      ? "text-emerald-500 scale-110"
+                      : "text-muted opacity-40 hover:opacity-70 scale-90"
+                  }`}
+                />
               </button>
             ))}
           </div>
@@ -105,7 +114,10 @@ export default function TimelineTab({ locale, entries }: TimelineTabProps) {
                 {/* ヘッダー */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">{formatDateShort(entry.date, locale)}</span>
-                  {entry.mood && <span className="text-xl">{MOODS[entry.mood - 1]}</span>}
+                  {entry.mood && (() => {
+                    const Face = MOOD_FACES[entry.mood - 1];
+                    return <Face size={28} className="text-emerald-500" />;
+                  })()}
                 </div>
 
                 {/* サマリー（折りたたみ時） */}
@@ -116,8 +128,13 @@ export default function TimelineTab({ locale, entries }: TimelineTabProps) {
                         {tFormat("timeline.activities", locale, entry.manualEntries.length)}
                       </p>
                     )}
-                    {entry.comment && (
-                      <p className="text-sm text-muted mt-1 line-clamp-1">{entry.comment}</p>
+                    {entry.aiSummary && (
+                      <p className="text-sm text-muted mt-1 line-clamp-1">{entry.aiSummary}</p>
+                    )}
+                    {!entry.aiSummary && (entry.notes ?? []).filter(n => n.trim()).length > 0 && (
+                      <p className="text-sm text-muted mt-1 line-clamp-1">
+                        {(entry.notes ?? []).filter(n => n.trim())[0]}
+                      </p>
                     )}
                   </div>
                 )}
@@ -138,10 +155,23 @@ export default function TimelineTab({ locale, entries }: TimelineTabProps) {
                       </div>
                     )}
 
-                    {/* コメント */}
-                    {entry.comment && (
-                      <div className="bg-subtle rounded-xl p-3">
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{entry.comment}</p>
+                    {/* AI生成日記 */}
+                    {entry.aiSummary && (
+                      <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3">
+                        <p className="text-xs text-emerald-500/60 mb-1">AI</p>
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{entry.aiSummary}</p>
+                      </div>
+                    )}
+
+                    {/* メモ（箇条書き） */}
+                    {(entry.notes ?? []).filter(n => n.trim()).length > 0 && (
+                      <div className="bg-subtle rounded-xl p-3 space-y-1">
+                        {(entry.notes ?? []).filter(n => n.trim()).map((note, ni) => (
+                          <p key={ni} className="text-sm flex gap-2">
+                            <span className="text-emerald-500 shrink-0">•</span>
+                            {note}
+                          </p>
+                        ))}
                       </div>
                     )}
 

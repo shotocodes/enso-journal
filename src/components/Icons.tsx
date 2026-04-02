@@ -70,6 +70,63 @@ export function TrashIcon({ size = 16, className = "" }: IconProps) {
   );
 }
 
+// ===== Mood Face Icons (5 levels) =====
+
+export function MoodFace1({ size = 32, className = "" }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" className={className} aria-hidden>
+      <circle cx="16" cy="16" r="13" />
+      <circle cx="11" cy="13" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="21" cy="13" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M11 22 Q16 18 21 22" />
+    </svg>
+  );
+}
+
+export function MoodFace2({ size = 32, className = "" }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" className={className} aria-hidden>
+      <circle cx="16" cy="16" r="13" />
+      <circle cx="11" cy="13" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="21" cy="13" r="1.2" fill="currentColor" stroke="none" />
+      <line x1="11" y1="21" x2="21" y2="21" />
+    </svg>
+  );
+}
+
+export function MoodFace3({ size = 32, className = "" }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" className={className} aria-hidden>
+      <circle cx="16" cy="16" r="13" />
+      <circle cx="11" cy="13" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="21" cy="13" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M11 20 Q16 22 21 20" />
+    </svg>
+  );
+}
+
+export function MoodFace4({ size = 32, className = "" }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" className={className} aria-hidden>
+      <circle cx="16" cy="16" r="13" />
+      <circle cx="11" cy="13" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="21" cy="13" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M10 19 Q16 24 22 19" />
+    </svg>
+  );
+}
+
+export function MoodFace5({ size = 32, className = "" }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" className={className} aria-hidden>
+      <circle cx="16" cy="16" r="13" />
+      <path d="M10 12 Q11 10 12 12" />
+      <path d="M20 12 Q21 10 22 12" />
+      <path d="M9 18 Q16 26 23 18" />
+    </svg>
+  );
+}
+
 export function SearchIcon({ size = 16, className = "" }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>

@@ -169,9 +169,8 @@ export function LightbulbIcon({ size = 22, className = "" }: IconProps) {
 
 export function FireIcon({ size = 22, className = "" }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
-      <path d="M12 2c.5 3.5-1.5 6-1.5 6 1.5 1 3 .5 3 .5s-1 2.5-3 4c-2 1.5-4 1-4 1s0-2 1-3.5C8.5 8.5 7 7 7 4c0 0 2 1 3.5 1S11.5 2 12 2z" />
-      <path d="M10 15c0 1.1.9 2 2 2s2-.9 2-2c0-1.5-2-3-2-3s-2 1.5-2 3z" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+      <path d="M12 23c-4.97 0-8-3.03-8-7 0-2.5 1.5-4.8 3-6.2 0 0 .5 2.2 2 3.2 0-3 2-6 4-8 .5 2.5 2 4.5 3.5 6 1.5 1.5 2.5 3 2.5 5 0 3.97-3.03 7-7 7zm0-3c1.66 0 3-1.34 3-3 0-1-.6-2-1.5-2.8-.3.8-.7 1.3-1.5 1.8-.8-.8-1-1.6-1-2.5C9.8 14.7 9 16 9 17c0 1.66 1.34 3 3 3z" />
     </svg>
   );
 }

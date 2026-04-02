@@ -60,6 +60,7 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
   const [todayStr, setTodayStr] = useState(getTodayStr);
   const [showAddEntry, setShowAddEntry] = useState(false);
   const [editEntry, setEditEntry] = useState<ManualEntry | null>(null);
+  const [editingAiSummary, setEditingAiSummary] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const noteRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -308,11 +309,31 @@ export default function TodayTab({ locale, entries, onEntriesChange }: TodayTabP
           </button>
         </div>
 
-        {/* AI生成の日記 */}
+        {/* AI生成の日記（クリックで編集可能） */}
         {today?.aiSummary && (
           <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3">
-            <p className="text-xs text-emerald-500/60 mb-1">AI</p>
-            <p className="text-sm leading-relaxed whitespace-pre-wrap">{today.aiSummary}</p>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs text-emerald-500/60">AI</p>
+              <button
+                onClick={() => setEditingAiSummary(!editingAiSummary)}
+                className="text-emerald-500/40 hover:text-emerald-500 transition-colors"
+              >
+                <PenIcon size={12} />
+              </button>
+            </div>
+            {editingAiSummary ? (
+              <textarea
+                value={today.aiSummary}
+                onChange={(e) => handleSetAiSummary(e.target.value)}
+                rows={4}
+                className="w-full bg-transparent text-sm resize-none focus:outline-none leading-relaxed"
+                style={{ color: "var(--text)" }}
+                autoFocus
+                onBlur={() => setEditingAiSummary(false)}
+              />
+            ) : (
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{today.aiSummary}</p>
+            )}
           </div>
         )}
 

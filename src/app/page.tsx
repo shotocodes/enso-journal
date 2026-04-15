@@ -38,6 +38,23 @@ export default function Page() {
     if (savedEntries) setEntries(savedEntries);
   }, []);
 
+  // 他アプリからの書き込みを検知して再読み込み
+  useEffect(() => {
+    const reload = () => {
+      const latest = storage.get<DailyJournal[]>(STORAGE_KEYS.ENTRIES);
+      if (latest) setEntries(latest);
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") reload();
+    };
+    window.addEventListener("focus", reload);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("focus", reload);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
+
   // テーマ適用
   useEffect(() => {
     applyTheme(theme);
